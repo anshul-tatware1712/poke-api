@@ -38,7 +38,9 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "id", desc: false },
+  ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState("");
@@ -132,7 +134,7 @@ export function DataTable<TData, TValue>({
       <div className="rounded-md border max-h-[30rem] overflow-y-auto overflow-x-auto">
         <div className="min-w-[1000px]">
           <Table>
-            <TableHeader className="sticky top-0 bg-background">
+            <TableHeader className="sticky top-0 bg-background z-10">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
@@ -156,7 +158,7 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="hover:bg-muted/50 data-[state=selected]:bg-muted"
+                    className="hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>

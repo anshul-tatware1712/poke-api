@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { AddColumnDialog } from "@/components/AddColumnDialog";
+import Image from "next/image";
 
 const EditableCell = ({
   value,
@@ -19,17 +20,17 @@ const EditableCell = ({
   field,
 }: {
   value: number;
-  onUpdate: (id: string, field: string, value: number) => void;
+  onUpdate: (id: string, field: string, value: number) => Promise<void>;
   pokemonId: string;
   field: string;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value.toString());
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const numValue = parseInt(editValue);
     if (!isNaN(numValue) && numValue >= 0) {
-      onUpdate(pokemonId, field, numValue);
+      await onUpdate(pokemonId, field, numValue);
       setIsEditing(false);
     } else {
       setEditValue(value.toString());
@@ -80,16 +81,16 @@ const EditableTextCell = ({
   field,
 }: {
   value: string;
-  onUpdate: (id: string, field: string, value: string) => void;
+  onUpdate: (id: string, field: string, value: string) => Promise<void>;
   pokemonId: string;
   field: string;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(value);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editValue.trim()) {
-      onUpdate(pokemonId, field, editValue.trim());
+      await onUpdate(pokemonId, field, editValue.trim());
       setIsEditing(false);
     } else {
       setEditValue(value);
@@ -138,12 +139,12 @@ const EditableBooleanCell = ({
   field,
 }: {
   value: boolean;
-  onUpdate: (id: string, field: string, value: boolean) => void;
+  onUpdate: (id: string, field: string, value: boolean) => Promise<void>;
   pokemonId: string;
   field: string;
 }) => {
-  const handleToggle = () => {
-    onUpdate(pokemonId, field, !value);
+  const handleToggle = async () => {
+    await onUpdate(pokemonId, field, !value);
   };
 
   return (
@@ -180,8 +181,8 @@ const createCustomColumn = (
           return (
             <EditableCell
               value={row.getValue(customColumn.id) || 0}
-              onUpdate={(id, field, value) =>
-                updatePokemon(id, { [field]: value })
+              onUpdate={async (id, field, value) =>
+                await updatePokemon(id, { [field]: value })
               }
               pokemonId={row.original.id}
               field={customColumn.id}
@@ -197,8 +198,8 @@ const createCustomColumn = (
           return (
             <EditableBooleanCell
               value={row.getValue(customColumn.id) || false}
-              onUpdate={(id, field, value) =>
-                updatePokemon(id, { [field]: value })
+              onUpdate={async (id, field, value) =>
+                await updatePokemon(id, { [field]: value })
               }
               pokemonId={row.original.id}
               field={customColumn.id}
@@ -214,8 +215,8 @@ const createCustomColumn = (
           return (
             <EditableTextCell
               value={row.getValue(customColumn.id) || ""}
-              onUpdate={(id, field, value) =>
-                updatePokemon(id, { [field]: value })
+              onUpdate={async (id, field, value) =>
+                await updatePokemon(id, { [field]: value })
               }
               pokemonId={row.original.id}
               field={customColumn.id}
@@ -247,9 +248,9 @@ const createCustomColumn = (
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
+            onClick={async () => {
               const { removeCustomColumn } = usePokemonStore.getState();
-              removeCustomColumn(customColumn.id);
+              await removeCustomColumn(customColumn.id);
             }}
             className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
           >
@@ -322,11 +323,45 @@ export const createColumns = (
       cell: ({ row }) => (
         <EditableTextCell
           value={row.getValue("name")}
-          onUpdate={(id, field, value) => updatePokemon(id, { [field]: value })}
+          onUpdate={async (id, field, value) =>
+            await updatePokemon(id, { [field]: value })
+          }
           pokemonId={row.original.id}
           field="name"
         />
       ),
+    },
+    {
+      accessorKey: "url",
+      header: () => {
+        return <div>Image</div>;
+      },
+      cell: ({ row }) => {
+        const imageUrl = row.getValue("url");
+        const pokemonName = row.getValue("name");
+
+        if (!imageUrl || imageUrl === "") {
+          return (
+            <div className="w-10 h-10 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+              No Image
+            </div>
+          );
+        }
+
+        return (
+          <Image
+            src={imageUrl as string}
+            alt={`${pokemonName} sprite`}
+            className="w-10 h-10 object-contain"
+            width={40}
+            height={40}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png`;
+            }}
+          />
+        );
+      },
     },
     {
       accessorKey: "types",
@@ -351,7 +386,9 @@ export const createColumns = (
       cell: ({ row }) => (
         <EditableTextCell
           value={row.getValue("types")}
-          onUpdate={(id, field, value) => updatePokemon(id, { [field]: value })}
+          onUpdate={async (id, field, value) =>
+            await updatePokemon(id, { [field]: value })
+          }
           pokemonId={row.original.id}
           field="types"
         />
@@ -380,7 +417,9 @@ export const createColumns = (
       cell: ({ row }) => (
         <EditableCell
           value={row.getValue("hp")}
-          onUpdate={(id, field, value) => updatePokemon(id, { [field]: value })}
+          onUpdate={async (id, field, value) =>
+            await updatePokemon(id, { [field]: value })
+          }
           pokemonId={row.original.id}
           field="hp"
         />
@@ -409,7 +448,9 @@ export const createColumns = (
       cell: ({ row }) => (
         <EditableCell
           value={row.getValue("attack")}
-          onUpdate={(id, field, value) => updatePokemon(id, { [field]: value })}
+          onUpdate={async (id, field, value) =>
+            await updatePokemon(id, { [field]: value })
+          }
           pokemonId={row.original.id}
           field="attack"
         />
@@ -438,7 +479,9 @@ export const createColumns = (
       cell: ({ row }) => (
         <EditableCell
           value={row.getValue("defense")}
-          onUpdate={(id, field, value) => updatePokemon(id, { [field]: value })}
+          onUpdate={async (id, field, value) =>
+            await updatePokemon(id, { [field]: value })
+          }
           pokemonId={row.original.id}
           field="defense"
         />
@@ -467,7 +510,9 @@ export const createColumns = (
       cell: ({ row }) => (
         <EditableCell
           value={row.getValue("spAttack")}
-          onUpdate={(id, field, value) => updatePokemon(id, { [field]: value })}
+          onUpdate={async (id, field, value) =>
+            await updatePokemon(id, { [field]: value })
+          }
           pokemonId={row.original.id}
           field="spAttack"
         />
@@ -496,7 +541,9 @@ export const createColumns = (
       cell: ({ row }) => (
         <EditableCell
           value={row.getValue("spDefense")}
-          onUpdate={(id, field, value) => updatePokemon(id, { [field]: value })}
+          onUpdate={async (id, field, value) =>
+            await updatePokemon(id, { [field]: value })
+          }
           pokemonId={row.original.id}
           field="spDefense"
         />
@@ -525,7 +572,9 @@ export const createColumns = (
       cell: ({ row }) => (
         <EditableCell
           value={row.getValue("speed")}
-          onUpdate={(id, field, value) => updatePokemon(id, { [field]: value })}
+          onUpdate={async (id, field, value) =>
+            await updatePokemon(id, { [field]: value })
+          }
           pokemonId={row.original.id}
           field="speed"
         />
@@ -533,7 +582,7 @@ export const createColumns = (
     },
     {
       accessorKey: "actions",
-      header: ({ column }) => {
+      header: () => {
         return <AddColumnDialog />;
       },
     },

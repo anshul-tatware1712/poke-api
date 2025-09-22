@@ -6,6 +6,8 @@ import { createColumns } from "./columns";
 import { usePokemonStore } from "@/store/pokemonStore";
 import { useIndexedDBLoader } from "@/hooks/useIndexedDBLoader";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import Papa from "papaparse";
 
 const Page = () => {
   const { pokemons, customColumns } = usePokemonStore();
@@ -18,6 +20,20 @@ const Page = () => {
       router.push("/");
     }
   }, [hasChecked, isLoading, isPokemonsSet, pokemons.length, router]);
+
+  const handleExportData = () => {
+    const csv = Papa.unparse(
+      pokemons
+        .slice()
+        .sort((a, b) => Number(a.id) - Number(b.id))
+    );
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "pokemon.csv";
+    link.click();
+  };
 
   if (isLoading && !isPokemonsSet) {
     return (
@@ -35,10 +51,13 @@ const Page = () => {
   return (
     <div className="container mx-auto py-10">
       <div className="space-y-6">
-        <div>
+        <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">
             Pokémon Database
           </h1>
+          <Button variant="destructive" onClick={handleExportData}>
+            Export Data
+          </Button>
         </div>
 
         <DataTable columns={columns} data={pokemons} />

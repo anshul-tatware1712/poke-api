@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 export interface PokemonDetails {
   id: string;
+  url: string;
   name: string;
   types: string;
   hp: number;
@@ -26,20 +27,22 @@ interface PokemonStore {
   isPokemonsSet: boolean;
   isLoading: boolean;
   addPokemon: (pokemon: PokemonDetails) => void;
-  updatePokemon: (id: string, updatedPokemon: Partial<PokemonDetails>) => void;
-  removePokemon: (id: string) => void;
+  updatePokemon: (
+    id: string,
+    updatedPokemon: Partial<PokemonDetails>
+  ) => Promise<void>;
   setAllPokemons: (pokemons: PokemonDetails[]) => void;
   setLoading: (loading: boolean) => void;
   loadFromIndexedDB: () => Promise<void>;
-  addCustomColumn: (column: CustomColumn) => void;
-  removeCustomColumn: (columnId: string) => void;
+  addCustomColumn: (column: CustomColumn) => Promise<void>;
+  removeCustomColumn: (columnId: string) => Promise<void>;
   updateCustomColumn: (
     columnId: string,
     updates: Partial<CustomColumn>
-  ) => void;
+  ) => Promise<void>;
 }
 
-export const usePokemonStore = create<PokemonStore>((set) => ({
+export const usePokemonStore = create<PokemonStore>((set, get) => ({
   pokemons: [],
   customColumns: [],
   isPokemonsSet: false,
@@ -54,7 +57,7 @@ export const usePokemonStore = create<PokemonStore>((set) => ({
     }));
   },
 
-  updatePokemon: (id, updatedPokemon) => {
+  updatePokemon: async (id, updatedPokemon) => {
     set((state) => ({
       pokemons: state.pokemons.map((pokemon) =>
         pokemon.id === id
@@ -62,12 +65,18 @@ export const usePokemonStore = create<PokemonStore>((set) => ({
           : pokemon
       ),
     }));
-  },
 
-  removePokemon: (id) => {
-    set((state) => ({
-      pokemons: state.pokemons.filter((pokemon) => pokemon.id !== id),
-    }));
+    try {
+      const { savePokemon } = await import("@/Utils/indexedDb");
+      const updatedPokemonData = get().pokemons.find(
+        (p: PokemonDetails) => p.id === id
+      );
+      if (updatedPokemonData) {
+        await savePokemon(updatedPokemonData);
+      }
+    } catch (error) {
+      console.error("Error saving Pokemon to IndexedDB:", error);
+    }
   },
 
   setAllPokemons: (pokemons: PokemonDetails[]) => {
@@ -88,8 +97,13 @@ export const usePokemonStore = create<PokemonStore>((set) => ({
   loadFromIndexedDB: async () => {
     try {
       set({ isLoading: true });
-      const { getAllPokemons } = await import("@/Utils/indexedDb");
-      const pokemons = await getAllPokemons();
+      const { getAllPokemons, getAllCustomColumns } = await import(
+        "@/Utils/indexedDb"
+      );
+      const [pokemons, customColumns] = await Promise.all([
+        getAllPokemons(),
+        getAllCustomColumns(),
+      ]);
 
       if (pokemons && pokemons.length > 0) {
         const pokemonsWithIds = pokemons.map((pokemon) => ({
@@ -98,11 +112,15 @@ export const usePokemonStore = create<PokemonStore>((set) => ({
         }));
         set({
           pokemons: pokemonsWithIds,
+          customColumns: customColumns || [],
           isPokemonsSet: true,
           isLoading: false,
         });
       } else {
-        set({ isLoading: false });
+        set({
+          customColumns: customColumns || [],
+          isLoading: false,
+        });
       }
     } catch (error) {
       console.error("Error loading from IndexedDB:", error);
@@ -110,7 +128,7 @@ export const usePokemonStore = create<PokemonStore>((set) => ({
     }
   },
 
-  addCustomColumn: (column) => {
+  addCustomColumn: async (column) => {
     set((state) => {
       const newColumn = { ...column };
       const updatedPokemons = state.pokemons.map(
@@ -126,12 +144,24 @@ export const usePokemonStore = create<PokemonStore>((set) => ({
         pokemons: updatedPokemons,
       };
     });
+
+    try {
+      const { saveCustomColumn, savePokemons } = await import(
+        "@/Utils/indexedDb"
+      );
+      await saveCustomColumn(column);
+      const updatedPokemons = get().pokemons;
+      await savePokemons(updatedPokemons);
+    } catch (error) {
+      console.error("Error saving custom column to IndexedDB:", error);
+    }
   },
 
-  removeCustomColumn: (columnId) => {
+  removeCustomColumn: async (columnId) => {
     set((state) => {
       const updatedPokemons = state.pokemons.map((pokemon) => {
-        const { [columnId]: _, ...rest } = pokemon;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [columnId]: _removedColumn, ...rest } = pokemon;
         return rest as PokemonDetails;
       });
 
@@ -140,13 +170,35 @@ export const usePokemonStore = create<PokemonStore>((set) => ({
         pokemons: updatedPokemons,
       };
     });
+    try {
+      const { removeCustomColumn, savePokemons } = await import(
+        "@/Utils/indexedDb"
+      );
+      await removeCustomColumn(columnId);
+      const updatedPokemons = get().pokemons;
+      await savePokemons(updatedPokemons);
+    } catch (error) {
+      console.error("Error removing custom column from IndexedDB:", error);
+    }
   },
 
-  updateCustomColumn: (columnId, updates) => {
+  updateCustomColumn: async (columnId, updates) => {
     set((state) => ({
       customColumns: state.customColumns.map((col) =>
         col.id === columnId ? { ...col, ...updates } : col
       ),
     }));
+
+    try {
+      const { saveCustomColumn } = await import("@/Utils/indexedDb");
+      const updatedColumn = get().customColumns.find(
+        (col: CustomColumn) => col.id === columnId
+      );
+      if (updatedColumn) {
+        await saveCustomColumn(updatedColumn);
+      }
+    } catch (error) {
+      console.error("Error updating custom column in IndexedDB:", error);
+    }
   },
 }));

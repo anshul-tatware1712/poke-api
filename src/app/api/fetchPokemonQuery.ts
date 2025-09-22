@@ -61,6 +61,9 @@ const fetchPokemonDetailsBatched = async (
         details.push({
           id: data.id,
           name: data.name,
+          url: data.id
+            ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${data.id}.png`
+            : "",
           types: data.types
             .map((t: { type: { name: string } }) => t.type.name)
             .join(" / "),
