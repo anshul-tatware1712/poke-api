@@ -16,6 +16,8 @@ import { useFetchAllPokemonWithDetails } from "./api/fetchPokemonQuery";
 import { useState, useEffect } from "react";
 import { usePokemonStore } from "@/store/pokemonStore";
 import { useRouter } from "next/navigation";
+import { savePokemons } from "@/Utils/indexedDb";
+import { useIndexedDBLoader } from "@/hooks/useIndexedDBLoader";
 
 export default function Home() {
   const router = useRouter();
@@ -28,6 +30,8 @@ export default function Home() {
   } = useFetchAllPokemonWithDetails();
   const [hasStarted, setHasStarted] = useState(false);
 
+  const { isPokemonsSet } = useIndexedDBLoader();
+
   const handleFetchPokemon = () => {
     setHasStarted(true);
     refetch();
@@ -37,14 +41,12 @@ export default function Home() {
     router.push("/poke-data");
   };
 
-  const isPokemonsSet = usePokemonStore.getState().isPokemonsSet;
-
   useEffect(() => {
     if (allPokemon && Array.isArray(allPokemon) && allPokemon.length > 0) {
       usePokemonStore.getState().setAllPokemons(allPokemon);
-      usePokemonStore.setState({ isPokemonsSet: true });
+      savePokemons(allPokemon);
     }
-  }, [allPokemon, isPokemonsSet]);
+  }, [allPokemon]);
 
   const progressPercentage =
     progress.total > 0 ? (progress.fetched / progress.total) * 100 : 0;
