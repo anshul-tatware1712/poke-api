@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 
-// Yup validation schema
 const schema = yup.object({
   columnName: yup
     .string()

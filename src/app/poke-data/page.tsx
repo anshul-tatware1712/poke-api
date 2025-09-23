@@ -23,9 +23,7 @@ const Page = () => {
 
   const handleExportData = () => {
     const csv = Papa.unparse(
-      pokemons
-        .slice()
-        .sort((a, b) => Number(a.id) - Number(b.id))
+      pokemons.slice().sort((a, b) => Number(a.id) - Number(b.id))
     );
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });

@@ -10,7 +10,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { AddColumnDialog } from "@/components/AddColumnDialog";
+import { AddColumnDialog } from "@/components/Features/AddColumnDialog";
 import Image from "next/image";
 
 const EditableCell = ({
@@ -124,10 +124,10 @@ const EditableTextCell = ({
 
   return (
     <div
-      className="cursor-pointer hover:bg-muted/50 px-2 py-1 rounded"
+      className="cursor-pointer justify-center flex items-center hover:bg-muted/50 px-2 py-1 rounded"
       onClick={() => setIsEditing(true)}
     >
-      {value}
+      {value || "-"}
     </div>
   );
 };
@@ -291,7 +291,7 @@ export const createColumns = (
       },
       cell: ({ row }) => (
         <div className="font-mono text-sm text-muted-foreground">
-          #{row.getValue("id")}
+          {row.getValue("id")}
         </div>
       ),
       sortingFn: (rowA, rowB) => {

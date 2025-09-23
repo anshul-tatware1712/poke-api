@@ -8,7 +8,7 @@ interface Pokemon {
   url: string;
 }
 
-interface PokemonProgress {
+export interface PokemonProgress {
   fetched: number;
   total: number;
   isComplete: boolean;
