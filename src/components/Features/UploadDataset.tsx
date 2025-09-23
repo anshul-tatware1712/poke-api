@@ -1,11 +1,12 @@
 import React from "react";
 import { Card } from "../ui/card";
-import { FileText, Upload, Zap, BarChart3 } from "lucide-react";
+import { Upload } from "lucide-react";
 import { Input } from "../ui/input";
 import { Loader2 } from "lucide-react";
 import { CheckCircle } from "lucide-react";
 import { CustomMappingDialog } from "./CustomMappingDialog";
 import { useUploadedStore } from "@/store/uploadedStore";
+import { uploadCardConfig } from "./config";
 
 interface UploadDatasetProps {
   handleUploadCSV: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -28,19 +29,14 @@ const UploadDataset = ({ handleUploadCSV }: UploadDatasetProps) => {
         </div>
 
         <div className="space-y-4 mb-6">
-          <div className="flex items-center text-sm text-primary">
-            <FileText className="h-4 w-4 mr-2 text-orange-500" />
-            <span>Support for large CSV files (less than 100MB)</span>
-          </div>
-          <div className="flex items-center text-sm text-primary">
-            <Zap className="h-4 w-4 mr-2 text-yellow-500" />
-            <span>Client-side streaming with PapaParse</span>
-          </div>
-          <div className="flex items-center text-sm text-primary">
-            <BarChart3 className="h-4 w-4 mr-2 text-green-500" />
-            <span>Custom schema mapping</span>
-          </div>
+          {uploadCardConfig.map((card, i) => (
+            <div key={i} className="flex items-center text-sm text-primary">
+              <card.icon {...card.iconProps} />
+              <span>{card.title}</span>
+            </div>
+          ))}
         </div>
+
         <div className="flex flex-col md:flex-row w-full items-center justify-between gap-2">
           <label
             htmlFor="csv-file"

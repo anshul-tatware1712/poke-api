@@ -4,7 +4,7 @@ import { useFetchAllPokemonWithDetails } from "./api/fetchPokemonQuery";
 import { useState, useEffect } from "react";
 import { usePokemonStore } from "@/store/pokemonStore";
 import { useUploadedStore } from "@/store/uploadedStore";
-import { savePokemons } from "@/Utils/indexedDb";
+import { savePokemons } from "@/Utils/indexedPokeDb";
 import { ParseResult } from "papaparse";
 import Papa from "papaparse";
 import PokeDataset from "@/components/Features/PokeDataset";

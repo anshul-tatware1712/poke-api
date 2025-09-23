@@ -48,12 +48,8 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
   isPokemonsSet: false,
   isLoading: false,
   addPokemon: (pokemon) => {
-    const pokemonWithId = {
-      ...pokemon,
-      id: pokemon.id,
-    };
     set((state) => ({
-      pokemons: [...state.pokemons, pokemonWithId],
+      pokemons: [...state.pokemons, pokemon],
     }));
   },
 
@@ -67,7 +63,7 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
     }));
 
     try {
-      const { savePokemon } = await import("@/Utils/indexedDb");
+      const { savePokemon } = await import("@/Utils/indexedPokeDb");
       const updatedPokemonData = get().pokemons.find(
         (p: PokemonDetails) => p.id === id
       );
@@ -80,14 +76,7 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
   },
 
   setAllPokemons: (pokemons: PokemonDetails[]) => {
-    const pokemonsWithIds = pokemons.map(
-      (pokemon) =>
-        ({
-          ...pokemon,
-          id: pokemon.id,
-        } as PokemonDetails)
-    );
-    set({ pokemons: pokemonsWithIds, isPokemonsSet: true, isLoading: false });
+    set({ pokemons, isPokemonsSet: true, isLoading: false });
   },
 
   setLoading: (loading: boolean) => {
@@ -98,7 +87,7 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
     try {
       set({ isLoading: true });
       const { getAllPokemons, getAllCustomColumns } = await import(
-        "@/Utils/indexedDb"
+        "@/Utils/indexedPokeDb"
       );
       const [pokemons, customColumns] = await Promise.all([
         getAllPokemons(),
@@ -106,12 +95,8 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
       ]);
 
       if (pokemons && pokemons.length > 0) {
-        const pokemonsWithIds = pokemons.map((pokemon) => ({
-          ...pokemon,
-          id: pokemon.id,
-        }));
         set({
-          pokemons: pokemonsWithIds,
+          pokemons,
           customColumns: customColumns || [],
           isPokemonsSet: true,
           isLoading: false,
@@ -147,7 +132,7 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
 
     try {
       const { saveCustomColumn, savePokemons } = await import(
-        "@/Utils/indexedDb"
+        "@/Utils/indexedPokeDb"
       );
       await saveCustomColumn(column);
       const updatedPokemons = get().pokemons;
@@ -172,7 +157,7 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
     });
     try {
       const { removeCustomColumn, savePokemons } = await import(
-        "@/Utils/indexedDb"
+        "@/Utils/indexedPokeDb"
       );
       await removeCustomColumn(columnId);
       const updatedPokemons = get().pokemons;
@@ -190,7 +175,7 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
     }));
 
     try {
-      const { saveCustomColumn } = await import("@/Utils/indexedDb");
+      const { saveCustomColumn } = await import("@/Utils/indexedPokeDb");
       const updatedColumn = get().customColumns.find(
         (col: CustomColumn) => col.id === columnId
       );

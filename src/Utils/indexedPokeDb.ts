@@ -1,10 +1,12 @@
 import { PokemonDetails, CustomColumn } from "@/store/pokemonStore";
+import { UploadedData, ColumnMapping } from "@/store/uploadedStore";
 import { openDB } from "idb";
 
 const DB_NAME = "pokemonDB";
 const POKEMONS_STORE = "pokemons";
 const CUSTOM_COLUMNS_STORE = "customColumns";
-const DB_VERSION = 2;
+
+const DB_VERSION = 3;
 
 export const initDB = async () => {
   return openDB(DB_NAME, DB_VERSION, {
@@ -64,3 +66,4 @@ export const removeCustomColumn = async (columnId: string) => {
   await store.delete(columnId);
   await tx.done;
 };
+

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePokemonStore } from "@/store/pokemonStore";
 import { useUploadedStore, ColumnMapping } from "@/store/uploadedStore";
 import {
   Dialog,
@@ -32,8 +31,7 @@ const POKEMON_FIELDS = [
 export function CustomMappingDialog() {
   const [open, setOpen] = useState(false);
   const [mappings, setMappings] = useState<ColumnMapping[]>([]);
-  const { uploadedData, setColumnMappings, getMappedData } = useUploadedStore();
-  const { setAllPokemons } = usePokemonStore();
+  const { uploadedData, setColumnMappings } = useUploadedStore();
   const router = useRouter();
 
   const uploadedColumns =
@@ -63,29 +61,13 @@ export function CustomMappingDialog() {
     );
   };
 
-  const handleApplyMapping = () => {
+  const handleApplyMapping = async () => {
     const validMappings = mappings.filter(
       (mapping) => mapping.uploadedColumn !== ""
     );
 
-    setColumnMappings(validMappings);
-
-    const mappedData = getMappedData();
-    const pokemonData = mappedData.map((row) => ({
-      id: String(row.id),
-      name: String(row.name || ""),
-      url: String(row.url || ""),
-      types: String(row.types || ""),
-      hp: Number(row.hp) || 0,
-      attack: Number(row.attack) || 0,
-      defense: Number(row.defense) || 0,
-      spAttack: Number(row.spAttack) || 0,
-      spDefense: Number(row.spDefense) || 0,
-      speed: Number(row.speed) || 0,
-    }));
-
-    setAllPokemons(pokemonData);
-    router.push("/poke-data");
+    await setColumnMappings(validMappings);
+    router.push("/poke-data?source=uploaded");
     setOpen(false);
   };
 

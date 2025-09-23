@@ -1,13 +1,13 @@
 import React from "react";
 import { Card } from "../ui/card";
-import { Database, Zap, BarChart3, CheckCircle } from "lucide-react";
-import { Download } from "lucide-react";
+import { Database, CheckCircle } from "lucide-react";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
-import { useIndexedDBLoader } from "@/hooks/useIndexedDBLoader";
 import { PokemonDetails } from "@/store/pokemonStore";
 import { PokemonProgress } from "@/app/api/fetchPokemonQuery";
 import { useRouter } from "next/navigation";
+import { useIndexedDBLoader } from "@/hooks/useIndexedDBLoader";
+import { cardConfig } from "./config";
+import ApiProcess from "./ApiProcess";
 
 interface PokeDatasetProps {
   isLoading: boolean;
@@ -28,7 +28,7 @@ const PokeDataset = ({
   const { isPokemonsSet } = useIndexedDBLoader();
   const router = useRouter();
   const handleViewData = () => {
-    router.push("/poke-data");
+    router.push("/poke-data?source=api");
   };
   const progressPercentage =
     progress.total > 0 ? (progress.fetched / progress.total) * 100 : 0;
@@ -48,68 +48,22 @@ const PokeDataset = ({
         </div>
 
         <div className="space-y-4 mb-6">
-          <div className="flex items-center text-sm text-primary">
-            <Zap className="h-4 w-4 mr-2 text-yellow-500" />
-            <span>Real-time data from PokeAPI</span>
-          </div>
-          <div className="flex items-center text-sm text-primary">
-            <BarChart3 className="h-4 w-4 mr-2 text-green-500" />
-            <span>Complete dataset with pagination</span>
-          </div>
-          <div className="flex items-center text-sm text-primary">
-            <Download className="h-4 w-4 mr-2 text-purple-500" />
-            <span>Progress tracking & loading states</span>
-          </div>
+          {cardConfig.map((card, i) => (
+            <div key={i} className="flex items-center text-sm text-primary">
+              <card.icon {...card.iconProps} />
+              <span>{card.title}</span>
+            </div>
+          ))}
         </div>
 
-        {hasStarted && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">
-                {isLoading ? (
-                  <div className="flex items-center">
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Fetching Pokémon... (Batch {progress.currentBatch}/
-                    {progress.totalBatches})
-                  </div>
-                ) : progress.isComplete ? (
-                  <div className="flex items-center text-green-600">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Complete! (
-                    {Array.isArray(allPokemon) ? allPokemon.length : 0} Pokémon
-                    fetched)
-                  </div>
-                ) : (
-                  "Preparing to fetch..."
-                )}
-              </span>
-              <span className="text-sm text-gray-500">
-                {progress.fetched} / {progress.total}
-              </span>
-            </div>
-
-            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progressPercentage}%` }}
-              ></div>
-            </div>
-
-            <div className="text-xs text-gray-500 text-center">
-              {progressPercentage.toFixed(1)}% complete
-              {isLoading &&
-                ` • Batch ${progress.currentBatch} of ${progress.totalBatches}`}
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">
-              Error: {error.message || "Failed to fetch Pokémon data"}
-            </p>
-          </div>
-        )}
+        <ApiProcess
+          isLoading={isLoading}
+          progress={progress}
+          allPokemon={allPokemon}
+          error={error}
+          hasStarted={hasStarted}
+          progressPercentage={progressPercentage}
+        />
 
         <Button
           className="w-full"

@@ -25,7 +25,7 @@ const EditableCell = ({
   field: string;
 }) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState(value.toString());
+  const [editValue, setEditValue] = useState(value?.toString() || "");
 
   const handleSave = async () => {
     const numValue = parseInt(editValue);
