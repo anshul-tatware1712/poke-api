@@ -1,5 +1,4 @@
 import { PokemonDetails, CustomColumn } from "@/store/pokemonStore";
-import { UploadedData, ColumnMapping } from "@/store/uploadedStore";
 import { openDB } from "idb";
 
 const DB_NAME = "pokemonDB";
