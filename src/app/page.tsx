@@ -9,7 +9,7 @@ import { ParseResult } from "papaparse";
 import Papa from "papaparse";
 import PokeDataset from "@/components/Features/PokeDataset";
 import UploadDataset from "@/components/Features/UploadDataset";
-import PokeTitle from "@/components/Features/PokeTitle";
+import Title from "@/components/Features/Title";
 
 interface CSVRow {
   [key: string]: string | number | boolean;
@@ -25,6 +25,7 @@ export default function Home() {
   } = useFetchAllPokemonWithDetails();
   const [hasStarted, setHasStarted] = useState(false);
   const { setCsvUpload, setUploadedData } = useUploadedStore();
+  const { loadFromIndexedDB, isPokemonsSet } = usePokemonStore();
 
   const handleUploadCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,6 +104,12 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (!isPokemonsSet) {
+      loadFromIndexedDB();
+    }
+  }, [isPokemonsSet, loadFromIndexedDB]);
+
+  useEffect(() => {
     if (allPokemon && Array.isArray(allPokemon) && allPokemon.length > 0) {
       usePokemonStore.getState().setAllPokemons(allPokemon);
       savePokemons(allPokemon);
@@ -112,13 +119,12 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <PokeTitle />
+        <Title />
 
         <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           <PokeDataset
             isLoading={isLoading}
             progress={progress}
-            allPokemon={allPokemon || []}
             error={error}
             hasStarted={hasStarted}
             handleFetchPokemon={handleFetchPokemon}

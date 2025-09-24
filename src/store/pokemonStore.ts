@@ -118,7 +118,9 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
         });
       } else {
         set({
+          pokemons: [],
           customColumns: customColumns || [],
+          isPokemonsSet: false,
           isLoading: false,
         });
       }

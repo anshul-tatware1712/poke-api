@@ -4,22 +4,32 @@ import React, { useEffect } from "react";
 import { DataTable } from "./data-table";
 import { createColumns } from "./columns";
 import { usePokemonStore } from "@/store/pokemonStore";
-import { useIndexedDBLoader } from "@/hooks/useIndexedDBLoader";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Papa from "papaparse";
 
 const Page = () => {
-  const { pokemons, customColumns } = usePokemonStore();
-  const { isPokemonsSet, isLoading, hasChecked } = useIndexedDBLoader();
+  const {
+    pokemons,
+    customColumns,
+    isPokemonsSet,
+    isLoading,
+    loadFromIndexedDB,
+  } = usePokemonStore();
   const router = useRouter();
   const columns = createColumns(customColumns);
 
   useEffect(() => {
-    if (hasChecked && !isLoading && !isPokemonsSet && pokemons.length === 0) {
+    if (!isPokemonsSet && pokemons.length === 0 && !isLoading) {
+      loadFromIndexedDB();
+    }
+  }, [isPokemonsSet, pokemons.length, loadFromIndexedDB, isLoading]);
+
+  useEffect(() => {
+    if (!isLoading && isPokemonsSet && pokemons.length === 0) {
       router.push("/");
     }
-  }, [hasChecked, isLoading, isPokemonsSet, pokemons.length, router]);
+  }, [isLoading, isPokemonsSet, pokemons.length, router]);
 
   const handleExportData = () => {
     const csv = Papa.unparse(

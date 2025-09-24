@@ -4,14 +4,12 @@ import { Database, Zap, BarChart3, CheckCircle } from "lucide-react";
 import { Download } from "lucide-react";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
-import { useIndexedDBLoader } from "@/hooks/useIndexedDBLoader";
-import { PokemonDetails } from "@/store/pokemonStore";
+import { usePokemonStore } from "@/store/pokemonStore";
 import { PokemonProgress } from "@/app/api/fetchPokemonQuery";
 import { useRouter } from "next/navigation";
 
 interface PokeDatasetProps {
   isLoading: boolean;
-  allPokemon: PokemonDetails[];
   hasStarted: boolean;
   progress: PokemonProgress;
   error: Error | null;
@@ -19,13 +17,13 @@ interface PokeDatasetProps {
 }
 const PokeDataset = ({
   isLoading,
-  allPokemon,
   hasStarted,
   progress,
   error,
   handleFetchPokemon,
 }: PokeDatasetProps) => {
-  const { isPokemonsSet } = useIndexedDBLoader();
+  const { isPokemonsSet } = usePokemonStore();
+  console.log(isPokemonsSet);
   const router = useRouter();
   const handleViewData = () => {
     router.push("/poke-data");
@@ -69,15 +67,12 @@ const PokeDataset = ({
                 {isLoading ? (
                   <div className="flex items-center">
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Fetching Pokémon... (Batch {progress.currentBatch}/
-                    {progress.totalBatches})
+                    Fetching Pokémon...
                   </div>
                 ) : progress.isComplete ? (
                   <div className="flex items-center text-green-600">
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Complete! (
-                    {Array.isArray(allPokemon) ? allPokemon.length : 0} Pokémon
-                    fetched)
+                    Complete!
                   </div>
                 ) : (
                   "Preparing to fetch..."

@@ -1,6 +1,6 @@
 import React from "react";
 
-const PokeTitle = () => {
+const Title = () => {
   return (
     <div className="text-center my-8">
       <h1 className="text-5xl text-primary mb-4">Pokémon Labs</h1>
@@ -13,4 +13,4 @@ const PokeTitle = () => {
   );
 };
 
-export default PokeTitle;
+export default Title;
