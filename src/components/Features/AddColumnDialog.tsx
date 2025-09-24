@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { usePokemonStore, CustomColumn } from "@/store/pokemonStore";
+import { useUploadedStore } from "@/store/uploadedStore";
 import {
   Dialog,
   DialogContent,
@@ -37,9 +38,14 @@ const schema = yup.object({
 
 type FormData = yup.InferType<typeof schema>;
 
-export function AddColumnDialog() {
+interface AddColumnDialogProps {
+  method?: string;
+}
+
+export function AddColumnDialog({ method }: AddColumnDialogProps) {
   const [open, setOpen] = useState(false);
   const { addCustomColumn } = usePokemonStore();
+  const { addCustomColumn: addUploadedCustomColumn } = useUploadedStore();
 
   const {
     register,
@@ -83,7 +89,11 @@ export function AddColumnDialog() {
       defaultValue: parsedDefaultValue,
     };
 
-    addCustomColumn(newColumn);
+    if (method === "uploaded") {
+      addUploadedCustomColumn(newColumn);
+    } else {
+      addCustomColumn(newColumn);
+    }
     reset();
     setOpen(false);
   };

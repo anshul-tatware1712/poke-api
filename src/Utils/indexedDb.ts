@@ -21,6 +21,9 @@ export const initDB = async () => {
       if (!db.objectStoreNames.contains(UPLOADED_POKEMONS_STORE)) {
         db.createObjectStore(UPLOADED_POKEMONS_STORE, { keyPath: "id" });
       }
+      if (!db.objectStoreNames.contains(UPLOADED_COLUMNS_STORE)) {
+        db.createObjectStore(UPLOADED_COLUMNS_STORE, { keyPath: "id" });
+      }
     },
   });
 };

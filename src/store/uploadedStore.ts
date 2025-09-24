@@ -40,6 +40,7 @@ interface UploadedStore {
     columnId: string,
     updates: Partial<CustomColumn>
   ) => Promise<void>;
+  loadFromIndexedDB: () => Promise<void>;
 }
 
 export const useUploadedStore = create<UploadedStore>((set, get) => ({
@@ -161,6 +162,7 @@ export const useUploadedStore = create<UploadedStore>((set, get) => ({
       return {
         ...state,
         customColumns: [...state.customColumns, newColumn],
+        uploadedData: updatedPokemons,
         pokemons: updatedPokemons,
       };
     });
@@ -188,6 +190,7 @@ export const useUploadedStore = create<UploadedStore>((set, get) => ({
       return {
         ...state,
         customColumns: state.customColumns.filter((col) => col.id !== columnId),
+        uploadedData: updatedPokemons,
         pokemons: updatedPokemons,
       };
     });
@@ -221,6 +224,30 @@ export const useUploadedStore = create<UploadedStore>((set, get) => ({
       }
     } catch (error) {
       console.error("Error updating custom column in IndexedDB:", error);
+    }
+  },
+
+  loadFromIndexedDB: async () => {
+    try {
+      const { getAllUploadedPokemons, getAllUploadedColumns } = await import(
+        "@/Utils/indexedDb"
+      );
+
+      const uploadedData = await getAllUploadedPokemons();
+      const customColumns = await getAllUploadedColumns();
+
+      set({
+        uploadedData: uploadedData || [],
+        customColumns: customColumns || [],
+        isDataUploaded: true,
+      });
+    } catch (error) {
+      console.error("Error loading uploaded data from IndexedDB:", error);
+      set({
+        uploadedData: [],
+        customColumns: [],
+        isDataUploaded: true,
+      });
     }
   },
 }));

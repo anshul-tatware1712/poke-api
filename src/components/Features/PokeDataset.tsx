@@ -23,7 +23,6 @@ const PokeDataset = ({
   handleFetchPokemon,
 }: PokeDatasetProps) => {
   const { isPokemonsSet } = usePokemonStore();
-  console.log(isPokemonsSet);
   const router = useRouter();
   const handleViewData = () => {
     router.push("/poke-data?method=fetched");

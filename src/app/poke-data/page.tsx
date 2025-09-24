@@ -21,12 +21,15 @@ const PokeDataContent = () => {
     loadFromIndexedDB,
   } = usePokemonStore();
 
-  const { uploadedData } = useUploadedStore();
+  const { uploadedData, customColumns: uploadedCustomColumns } =
+    useUploadedStore();
 
   const data = method === "uploaded" ? uploadedData : pokemons;
+  const customColumnsToUse =
+    method === "uploaded" ? uploadedCustomColumns : customColumns;
 
   const router = useRouter();
-  const columns = createColumns(customColumns, method || undefined);
+  const columns = createColumns(customColumnsToUse, method || undefined);
 
   useEffect(() => {
     if (!isPokemonsSet && pokemons.length === 0 && !isLoading) {
@@ -35,24 +38,34 @@ const PokeDataContent = () => {
   }, [isPokemonsSet, pokemons.length, loadFromIndexedDB, isLoading]);
 
   useEffect(() => {
-    if (!isLoading && isPokemonsSet && pokemons.length === 0) {
+    if (
+      (!isLoading && isPokemonsSet && pokemons.length === 0) ||
+      (method === "uploaded" && uploadedData.length === 0)
+    ) {
       router.push("/");
     }
-  }, [isLoading, isPokemonsSet, pokemons.length, router]);
+  }, [
+    isLoading,
+    isPokemonsSet,
+    pokemons.length,
+    router,
+    uploadedData.length,
+    method,
+  ]);
 
   const handleExportData = () => {
     const csv = Papa.unparse(
-      pokemons.slice().sort((a, b) => Number(a.id) - Number(b.id))
+      data.slice().sort((a, b) => Number(a.id) - Number(b.id))
     );
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = "pokemon.csv";
+    link.download = method === "uploaded" ? "uploaded-data.csv" : "pokemon.csv";
     link.click();
   };
 
-  if (isLoading && !isPokemonsSet) {
+  if (method !== "uploaded" && isLoading && !isPokemonsSet) {
     return (
       <div className="container mx-auto py-10">
         <div className="flex items-center justify-center h-64">

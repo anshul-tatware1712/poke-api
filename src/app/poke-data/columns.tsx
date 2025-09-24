@@ -180,13 +180,19 @@ const createCustomColumn = (
           row,
         }: {
           row: {
-            getValue: (key: string) => number;
+            getValue: (key: string) => unknown;
             original: PokemonDetails | UploadedData;
           };
         }) {
+          const rawValue = row.getValue(customColumn.id);
+          const numValue =
+            typeof rawValue === "number"
+              ? rawValue
+              : parseInt(String(rawValue)) || 0;
+
           return (
             <EditableCell
-              value={row.getValue(customColumn.id) || 0}
+              value={numValue}
               onUpdate={async (id, field, value) =>
                 method === "uploaded"
                   ? await updateUploadedPokemon(id, { [field]: value })
@@ -202,13 +208,22 @@ const createCustomColumn = (
           row,
         }: {
           row: {
-            getValue: (key: string) => boolean;
+            getValue: (key: string) => unknown;
             original: PokemonDetails | UploadedData;
           };
         }) {
+          const rawValue = row.getValue(customColumn.id);
+          const boolValue =
+            typeof rawValue === "boolean"
+              ? rawValue
+              : rawValue === "true" ||
+                rawValue === true ||
+                rawValue === "1" ||
+                rawValue === 1;
+
           return (
             <EditableBooleanCell
-              value={row.getValue(customColumn.id) || false}
+              value={boolValue}
               onUpdate={async (id, field, value) =>
                 method === "uploaded"
                   ? await updateUploadedPokemon(id, { [field]: value })
@@ -224,13 +239,16 @@ const createCustomColumn = (
           row,
         }: {
           row: {
-            getValue: (key: string) => string;
+            getValue: (key: string) => unknown;
             original: PokemonDetails | UploadedData;
           };
         }) {
+          const rawValue = row.getValue(customColumn.id);
+          const textValue = rawValue ? String(rawValue) : "";
+
           return (
             <EditableTextCell
-              value={row.getValue(customColumn.id) || ""}
+              value={textValue}
               onUpdate={async (id, field, value) =>
                 method === "uploaded"
                   ? await updateUploadedPokemon(id, { [field]: value })
@@ -619,7 +637,7 @@ export const createColumns = (
     {
       accessorKey: "actions",
       header: () => {
-        return <AddColumnDialog />;
+        return <AddColumnDialog method={method} />;
       },
     },
   ];
