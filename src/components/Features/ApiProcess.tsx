@@ -13,7 +13,8 @@ interface ApiProcessProps {
 }
 const ApiProcess = ({
   hasStarted,
-  isLoading,
+  isLoading, 
+  
   progress,
   allPokemon,
   progressPercentage,
