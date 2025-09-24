@@ -117,7 +117,7 @@ const EditableTextCell = ({
         }
         onBlur={handleSave}
         onKeyDown={handleKeyDown}
-        className="h-8 "
+        className="h-8"
         autoFocus
       />
     );
@@ -125,7 +125,7 @@ const EditableTextCell = ({
 
   return (
     <div
-      className="cursor-pointer justify-center flex items-center hover:bg-muted/50 px-2 py-1 rounded"
+      className="cursor-pointer justify-center flex items-center hover:bg-muted/50 px-2 py-1 rounded min-h-[40px]"
       onClick={() => setIsEditing(true)}
     >
       {value || "-"}
@@ -150,7 +150,7 @@ const EditableBooleanCell = ({
 
   return (
     <div
-      className="cursor-pointer hover:bg-muted/50 px-2 py-1 rounded text-center"
+      className="cursor-pointer hover:bg-muted/50 px-2 py-1 rounded text-center min-h-[40px] flex items-center justify-center"
       onClick={handleToggle}
     >
       <span
@@ -266,11 +266,11 @@ const createCustomColumn = (
     accessorKey: customColumn.id,
     header: ({ column }) => {
       return (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between min-w-[120px]">
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 flex-1"
           >
             {customColumn.name}
             {column.getIsSorted() === "asc" ? (
@@ -296,10 +296,11 @@ const createCustomColumn = (
       );
     },
     cell: getCellComponent(),
+    size: 120,
   };
 };
 
-export const createColumns = (
+export const createVirtualizedColumns = (
   customColumns: CustomColumn[] = [],
   method?: string
 ): ColumnDef<PokemonDetails | UploadedData>[] => {
@@ -314,7 +315,7 @@ export const createColumns = (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 w-full"
           >
             ID
             {column.getIsSorted() === "asc" ? (
@@ -328,7 +329,7 @@ export const createColumns = (
         );
       },
       cell: ({ row }) => (
-        <div className="font-mono text-sm text-muted-foreground">
+        <div className="font-mono text-sm text-muted-foreground text-center min-h-[40px] flex items-center justify-center">
           {row.getValue("id")}
         </div>
       ),
@@ -337,6 +338,7 @@ export const createColumns = (
         const b = parseInt(rowB.getValue("id"));
         return a - b;
       },
+      size: 80,
     },
     {
       accessorKey: "name",
@@ -345,7 +347,7 @@ export const createColumns = (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 w-full"
           >
             Name
             {column.getIsSorted() === "asc" ? (
@@ -370,11 +372,12 @@ export const createColumns = (
           field="name"
         />
       ),
+      size: 150,
     },
     {
       accessorKey: "url",
       header: () => {
-        return <div>Image</div>;
+        return <div className="text-center">Image</div>;
       },
       cell: ({ row }) => {
         const imageUrl = row.getValue("url");
@@ -382,26 +385,29 @@ export const createColumns = (
 
         if (!imageUrl || imageUrl === "") {
           return (
-            <div className="w-10 h-10 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+            <div className="w-10 h-10 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground mx-auto">
               No Image
             </div>
           );
         }
 
         return (
-          <Image
-            src={imageUrl as string}
-            alt={`${pokemonName} sprite`}
-            className="w-10 h-10 object-contain"
-            width={40}
-            height={40}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png`;
-            }}
-          />
+          <div className="flex justify-center items-center min-h-[40px]">
+            <Image
+              src={imageUrl as string}
+              alt={`${pokemonName} sprite`}
+              className="w-10 h-10 object-contain"
+              width={40}
+              height={40}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/0.png`;
+              }}
+            />
+          </div>
         );
       },
+      size: 80,
     },
     {
       accessorKey: "types",
@@ -410,7 +416,7 @@ export const createColumns = (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 w-full"
           >
             Types
             {column.getIsSorted() === "asc" ? (
@@ -435,6 +441,7 @@ export const createColumns = (
           field="types"
         />
       ),
+      size: 120,
     },
     {
       accessorKey: "hp",
@@ -443,7 +450,7 @@ export const createColumns = (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 w-full"
           >
             HP
             {column.getIsSorted() === "asc" ? (
@@ -468,6 +475,7 @@ export const createColumns = (
           field="hp"
         />
       ),
+      size: 100,
     },
     {
       accessorKey: "attack",
@@ -476,7 +484,7 @@ export const createColumns = (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 w-full"
           >
             Attack
             {column.getIsSorted() === "asc" ? (
@@ -501,6 +509,7 @@ export const createColumns = (
           field="attack"
         />
       ),
+      size: 100,
     },
     {
       accessorKey: "defense",
@@ -509,7 +518,7 @@ export const createColumns = (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 w-full"
           >
             Defense
             {column.getIsSorted() === "asc" ? (
@@ -534,6 +543,7 @@ export const createColumns = (
           field="defense"
         />
       ),
+      size: 100,
     },
     {
       accessorKey: "spAttack",
@@ -542,7 +552,7 @@ export const createColumns = (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 w-full"
           >
             Sp. Attack
             {column.getIsSorted() === "asc" ? (
@@ -567,6 +577,7 @@ export const createColumns = (
           field="spAttack"
         />
       ),
+      size: 110,
     },
     {
       accessorKey: "spDefense",
@@ -575,7 +586,7 @@ export const createColumns = (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="h-8 px-2 lg:px-3"
+            className="h-8 px-2 lg:px-3 w-full"
           >
             Sp. Defense
             {column.getIsSorted() === "asc" ? (
@@ -600,7 +611,9 @@ export const createColumns = (
           field="spDefense"
         />
       ),
+      size: 110,
     },
+
     {
       accessorKey: "speed",
       header: ({ column }) => {

@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, Suspense } from "react";
-import { DataTable } from "./data-table";
-import { createColumns } from "./columns";
+import { createVirtualizedColumns } from "./columns";
 import { usePokemonStore } from "@/store/pokemonStore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Papa from "papaparse";
 import { useUploadedStore } from "@/store/uploadedStore";
+import { VirtualizedDataTable } from "./data-table";
 
 const PokeDataContent = () => {
   const searchParams = useSearchParams();
@@ -29,7 +29,7 @@ const PokeDataContent = () => {
     method === "uploaded" ? uploadedCustomColumns : customColumns;
 
   const router = useRouter();
-  const columns = createColumns(customColumnsToUse, method || undefined);
+  const columns = createVirtualizedColumns(customColumnsToUse, method || undefined);
 
   useEffect(() => {
     if (!isPokemonsSet && pokemons.length === 0 && !isLoading) {
@@ -90,7 +90,7 @@ const PokeDataContent = () => {
           </Button>
         </div>
 
-        <DataTable columns={columns} data={data} />
+        <VirtualizedDataTable columns={columns} data={data} />
       </div>
     </div>
   );
