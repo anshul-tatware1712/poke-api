@@ -131,15 +131,24 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      <div className="rounded-md border max-h-[30rem] overflow-y-auto overflow-x-auto">
+      <div className="rounded-md border max-h-[30rem] overflow-auto relative">
         <div className="min-w-[1000px]">
           <Table>
-            <TableHeader className="sticky top-0 bg-background z-10">
+            <TableHeader className="sticky top-0 bg-background w-full z-10">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
+                  {headerGroup.headers.map((header, index) => {
+                    const isLastColumn =
+                      index === headerGroup.headers.length - 1;
                     return (
-                      <TableHead key={header.id}>
+                      <TableHead
+                        key={header.id}
+                        className={
+                          isLastColumn
+                            ? "sticky right-0 bg-background border-l z-20 w-12"
+                            : ""
+                        }
+                      >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
@@ -160,14 +169,25 @@ export function DataTable<TData, TValue>({
                     data-state={row.getIsSelected() && "selected"}
                     className="hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors"
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+                    {row.getVisibleCells().map((cell, index) => {
+                      const isLastColumn =
+                        index === row.getVisibleCells().length - 1;
+                      return (
+                        <TableCell
+                          key={cell.id}
+                          className={
+                            isLastColumn
+                              ? "sticky right-0 bg-background border-l z-20 "
+                              : ""
+                          }
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 ))
               ) : (
