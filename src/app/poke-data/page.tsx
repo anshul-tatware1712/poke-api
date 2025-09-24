@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { DataTable } from "./data-table";
 import { createColumns } from "./columns";
 import { usePokemonStore } from "@/store/pokemonStore";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import Papa from "papaparse";
 import { useUploadedStore } from "@/store/uploadedStore";
 
-const Page = () => {
+const PokeDataContent = () => {
   const searchParams = useSearchParams();
   const method = searchParams.get("method");
 
@@ -80,6 +80,25 @@ const Page = () => {
         <DataTable columns={columns} data={data} />
       </div>
     </div>
+  );
+};
+
+const LoadingFallback = () => (
+  <div className="container mx-auto py-10">
+    <div className="flex items-center justify-center h-64">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    </div>
+  </div>
+);
+
+const Page = () => {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <PokeDataContent />
+    </Suspense>
   );
 };
 
