@@ -4,11 +4,15 @@ import React, { useEffect } from "react";
 import { DataTable } from "./data-table";
 import { createColumns } from "./columns";
 import { usePokemonStore } from "@/store/pokemonStore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Papa from "papaparse";
+import { useUploadedStore } from "@/store/uploadedStore";
 
 const Page = () => {
+  const searchParams = useSearchParams();
+  const method = searchParams.get("method");
+
   const {
     pokemons,
     customColumns,
@@ -16,8 +20,13 @@ const Page = () => {
     isLoading,
     loadFromIndexedDB,
   } = usePokemonStore();
+
+  const { uploadedData } = useUploadedStore();
+
+  const data = method === "uploaded" ? uploadedData : pokemons;
+
   const router = useRouter();
-  const columns = createColumns(customColumns);
+  const columns = createColumns(customColumns, method || undefined);
 
   useEffect(() => {
     if (!isPokemonsSet && pokemons.length === 0 && !isLoading) {
@@ -68,7 +77,7 @@ const Page = () => {
           </Button>
         </div>
 
-        <DataTable columns={columns} data={pokemons} />
+        <DataTable columns={columns} data={data} />
       </div>
     </div>
   );

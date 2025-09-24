@@ -12,6 +12,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { AddColumnDialog } from "@/components/Features/AddColumnDialog";
 import Image from "next/image";
+import { UploadedData, useUploadedStore } from "@/store/uploadedStore";
 
 const EditableCell = ({
   value,
@@ -166,9 +167,11 @@ const EditableBooleanCell = ({
 };
 
 const createCustomColumn = (
-  customColumn: CustomColumn
-): ColumnDef<PokemonDetails> => {
+  customColumn: CustomColumn,
+  method?: string
+): ColumnDef<PokemonDetails | UploadedData> => {
   const { updatePokemon } = usePokemonStore.getState();
+  const { updateUploadedPokemon } = useUploadedStore.getState();
 
   const getCellComponent = () => {
     switch (customColumn.type) {
@@ -176,15 +179,20 @@ const createCustomColumn = (
         return function NumberCell({
           row,
         }: {
-          row: { getValue: (key: string) => number; original: { id: string } };
+          row: {
+            getValue: (key: string) => number;
+            original: PokemonDetails | UploadedData;
+          };
         }) {
           return (
             <EditableCell
               value={row.getValue(customColumn.id) || 0}
               onUpdate={async (id, field, value) =>
-                await updatePokemon(id, { [field]: value })
+                method === "uploaded"
+                  ? await updateUploadedPokemon(id, { [field]: value })
+                  : await updatePokemon(id, { [field]: value })
               }
-              pokemonId={row.original.id}
+              pokemonId={row.original.id as string}
               field={customColumn.id}
             />
           );
@@ -193,15 +201,20 @@ const createCustomColumn = (
         return function BooleanCell({
           row,
         }: {
-          row: { getValue: (key: string) => boolean; original: { id: string } };
+          row: {
+            getValue: (key: string) => boolean;
+            original: PokemonDetails | UploadedData;
+          };
         }) {
           return (
             <EditableBooleanCell
               value={row.getValue(customColumn.id) || false}
               onUpdate={async (id, field, value) =>
-                await updatePokemon(id, { [field]: value })
+                method === "uploaded"
+                  ? await updateUploadedPokemon(id, { [field]: value })
+                  : await updatePokemon(id, { [field]: value })
               }
-              pokemonId={row.original.id}
+              pokemonId={row.original.id as string}
               field={customColumn.id}
             />
           );
@@ -210,15 +223,20 @@ const createCustomColumn = (
         return function TextCell({
           row,
         }: {
-          row: { getValue: (key: string) => string; original: { id: string } };
+          row: {
+            getValue: (key: string) => string;
+            original: PokemonDetails | UploadedData;
+          };
         }) {
           return (
             <EditableTextCell
               value={row.getValue(customColumn.id) || ""}
               onUpdate={async (id, field, value) =>
-                await updatePokemon(id, { [field]: value })
+                method === "uploaded"
+                  ? await updateUploadedPokemon(id, { [field]: value })
+                  : await updatePokemon(id, { [field]: value })
               }
-              pokemonId={row.original.id}
+              pokemonId={row.original.id as string}
               field={customColumn.id}
             />
           );
@@ -264,11 +282,13 @@ const createCustomColumn = (
 };
 
 export const createColumns = (
-  customColumns: CustomColumn[] = []
-): ColumnDef<PokemonDetails>[] => {
+  customColumns: CustomColumn[] = [],
+  method?: string
+): ColumnDef<PokemonDetails | UploadedData>[] => {
   const { updatePokemon } = usePokemonStore.getState();
+  const { updateUploadedPokemon } = useUploadedStore.getState();
 
-  const baseColumns: ColumnDef<PokemonDetails>[] = [
+  const baseColumns: ColumnDef<PokemonDetails | UploadedData>[] = [
     {
       accessorKey: "id",
       header: ({ column }) => {
@@ -324,9 +344,11 @@ export const createColumns = (
         <EditableTextCell
           value={row.getValue("name")}
           onUpdate={async (id, field, value) =>
-            await updatePokemon(id, { [field]: value })
+            method === "uploaded"
+              ? await updateUploadedPokemon(id, { [field]: value })
+              : await updatePokemon(id, { [field]: value })
           }
-          pokemonId={row.original.id}
+          pokemonId={row.original.id as string}
           field="name"
         />
       ),
@@ -387,9 +409,11 @@ export const createColumns = (
         <EditableTextCell
           value={row.getValue("types")}
           onUpdate={async (id, field, value) =>
-            await updatePokemon(id, { [field]: value })
+            method === "uploaded"
+              ? await updateUploadedPokemon(id, { [field]: value })
+              : await updatePokemon(id, { [field]: value })
           }
-          pokemonId={row.original.id}
+          pokemonId={row.original.id as string}
           field="types"
         />
       ),
@@ -418,9 +442,11 @@ export const createColumns = (
         <EditableCell
           value={row.getValue("hp")}
           onUpdate={async (id, field, value) =>
-            await updatePokemon(id, { [field]: value })
+            method === "uploaded"
+              ? await updateUploadedPokemon(id, { [field]: value })
+              : await updatePokemon(id, { [field]: value })
           }
-          pokemonId={row.original.id}
+          pokemonId={row.original.id as string}
           field="hp"
         />
       ),
@@ -449,9 +475,11 @@ export const createColumns = (
         <EditableCell
           value={row.getValue("attack")}
           onUpdate={async (id, field, value) =>
-            await updatePokemon(id, { [field]: value })
+            method === "uploaded"
+              ? await updateUploadedPokemon(id, { [field]: value })
+              : await updatePokemon(id, { [field]: value })
           }
-          pokemonId={row.original.id}
+          pokemonId={row.original.id as string}
           field="attack"
         />
       ),
@@ -480,9 +508,11 @@ export const createColumns = (
         <EditableCell
           value={row.getValue("defense")}
           onUpdate={async (id, field, value) =>
-            await updatePokemon(id, { [field]: value })
+            method === "uploaded"
+              ? await updateUploadedPokemon(id, { [field]: value })
+              : await updatePokemon(id, { [field]: value })
           }
-          pokemonId={row.original.id}
+          pokemonId={row.original.id as string}
           field="defense"
         />
       ),
@@ -511,9 +541,11 @@ export const createColumns = (
         <EditableCell
           value={row.getValue("spAttack")}
           onUpdate={async (id, field, value) =>
-            await updatePokemon(id, { [field]: value })
+            method === "uploaded"
+              ? await updateUploadedPokemon(id, { [field]: value })
+              : await updatePokemon(id, { [field]: value })
           }
-          pokemonId={row.original.id}
+          pokemonId={row.original.id as string}
           field="spAttack"
         />
       ),
@@ -542,9 +574,11 @@ export const createColumns = (
         <EditableCell
           value={row.getValue("spDefense")}
           onUpdate={async (id, field, value) =>
-            await updatePokemon(id, { [field]: value })
+            method === "uploaded"
+              ? await updateUploadedPokemon(id, { [field]: value })
+              : await updatePokemon(id, { [field]: value })
           }
-          pokemonId={row.original.id}
+          pokemonId={row.original.id as string}
           field="spDefense"
         />
       ),
@@ -573,9 +607,11 @@ export const createColumns = (
         <EditableCell
           value={row.getValue("speed")}
           onUpdate={async (id, field, value) =>
-            await updatePokemon(id, { [field]: value })
+            method === "uploaded"
+              ? await updateUploadedPokemon(id, { [field]: value })
+              : await updatePokemon(id, { [field]: value })
           }
-          pokemonId={row.original.id}
+          pokemonId={row.original.id as string}
           field="speed"
         />
       ),
@@ -588,7 +624,9 @@ export const createColumns = (
     },
   ];
 
-  const customColumnDefs = customColumns.map(createCustomColumn);
+  const customColumnDefs = customColumns.map((column) =>
+    createCustomColumn(column, method)
+  );
 
   return [
     ...baseColumns.slice(0, -1),

@@ -26,7 +26,7 @@ const PokeDataset = ({
   console.log(isPokemonsSet);
   const router = useRouter();
   const handleViewData = () => {
-    router.push("/poke-data");
+    router.push("/poke-data?method=fetched");
   };
   const progressPercentage =
     progress.total > 0 ? (progress.fetched / progress.total) * 100 : 0;

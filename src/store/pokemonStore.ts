@@ -26,7 +26,6 @@ interface PokemonStore {
   customColumns: CustomColumn[];
   isPokemonsSet: boolean;
   isLoading: boolean;
-  addPokemon: (pokemon: PokemonDetails) => void;
   updatePokemon: (
     id: string,
     updatedPokemon: Partial<PokemonDetails>
@@ -47,15 +46,6 @@ export const usePokemonStore = create<PokemonStore>((set, get) => ({
   customColumns: [],
   isPokemonsSet: false,
   isLoading: false,
-  addPokemon: (pokemon) => {
-    const pokemonWithId = {
-      ...pokemon,
-      id: pokemon.id,
-    };
-    set((state) => ({
-      pokemons: [...state.pokemons, pokemonWithId],
-    }));
-  },
 
   updatePokemon: async (id, updatedPokemon) => {
     set((state) => ({

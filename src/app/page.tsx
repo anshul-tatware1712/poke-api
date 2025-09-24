@@ -4,7 +4,7 @@ import { useFetchAllPokemonWithDetails } from "./api/fetchPokemonQuery";
 import { useState, useEffect } from "react";
 import { usePokemonStore } from "@/store/pokemonStore";
 import { useUploadedStore } from "@/store/uploadedStore";
-import { savePokemons } from "@/Utils/indexedDb";
+import { savePokemons, saveUploadedPokemons } from "@/Utils/indexedDb";
 import { ParseResult } from "papaparse";
 import Papa from "papaparse";
 import PokeDataset from "@/components/Features/PokeDataset";
@@ -24,7 +24,7 @@ export default function Home() {
     progress,
   } = useFetchAllPokemonWithDetails();
   const [hasStarted, setHasStarted] = useState(false);
-  const { setCsvUpload, setUploadedData } = useUploadedStore();
+  const { setCsvUpload, setAllUploadedPokemons } = useUploadedStore();
   const { loadFromIndexedDB, isPokemonsSet } = usePokemonStore();
 
   const handleUploadCSV = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +72,6 @@ export default function Home() {
           });
           return;
         }
-
         setCsvUpload({
           isUploading: false,
           error: null,
@@ -80,12 +79,13 @@ export default function Home() {
           fileName: file.name,
         });
 
-        setUploadedData(
+        setAllUploadedPokemons(
           results.data.map((row, index) => ({
             ...row,
             id: row.id || `${index + 1}`,
           }))
         );
+        saveUploadedPokemons(results.data);
       },
       error: (err) => {
         setCsvUpload({

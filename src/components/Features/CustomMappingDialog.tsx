@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePokemonStore } from "@/store/pokemonStore";
 import { useUploadedStore, ColumnMapping } from "@/store/uploadedStore";
 import {
   Dialog,
@@ -33,7 +32,7 @@ export function CustomMappingDialog() {
   const [open, setOpen] = useState(false);
   const [mappings, setMappings] = useState<ColumnMapping[]>([]);
   const { uploadedData, setColumnMappings, getMappedData } = useUploadedStore();
-  const { setAllPokemons } = usePokemonStore();
+  const { setAllUploadedPokemons } = useUploadedStore();
   const router = useRouter();
 
   const uploadedColumns =
@@ -71,7 +70,7 @@ export function CustomMappingDialog() {
     setColumnMappings(validMappings);
 
     const mappedData = getMappedData();
-    const pokemonData = mappedData.map((row) => ({
+    const uploadedPokemonsData = mappedData.map((row) => ({
       id: String(row.id),
       name: String(row.name || ""),
       url: String(row.url || ""),
@@ -84,8 +83,8 @@ export function CustomMappingDialog() {
       speed: Number(row.speed) || 0,
     }));
 
-    setAllPokemons(pokemonData);
-    router.push("/poke-data");
+    setAllUploadedPokemons(uploadedPokemonsData);
+    router.push("/poke-data?method=uploaded");
     setOpen(false);
   };
 

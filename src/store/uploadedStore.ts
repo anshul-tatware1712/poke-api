@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { CustomColumn } from "./pokemonStore";
 
 export interface UploadedData {
   [key: string]: string | number | boolean;
@@ -20,18 +21,32 @@ export interface CSVUploadStatus {
 interface UploadedStore {
   uploadedData: UploadedData[];
   columnMappings: ColumnMapping[];
+  customColumns: CustomColumn[];
+  pokemons: UploadedData[];
   isDataUploaded: boolean;
   csvUpload: CSVUploadStatus;
-  setUploadedData: (data: UploadedData[]) => void;
+  setAllUploadedPokemons: (data: UploadedData[]) => void;
   setColumnMappings: (mappings: ColumnMapping[]) => void;
+  updateUploadedPokemon: (
+    id: string,
+    updatedPokemon: Partial<UploadedData>
+  ) => Promise<void>;
   setCsvUpload: (status: CSVUploadStatus) => void;
   clearUploadedData: () => void;
   getMappedData: () => UploadedData[];
+  addCustomColumn: (column: CustomColumn) => Promise<void>;
+  removeCustomColumn: (columnId: string) => Promise<void>;
+  updateCustomColumn: (
+    columnId: string,
+    updates: Partial<CustomColumn>
+  ) => Promise<void>;
 }
 
 export const useUploadedStore = create<UploadedStore>((set, get) => ({
   uploadedData: [],
   columnMappings: [],
+  customColumns: [],
+  pokemons: [],
   isDataUploaded: false,
   csvUpload: {
     isUploading: false,
@@ -40,11 +55,37 @@ export const useUploadedStore = create<UploadedStore>((set, get) => ({
     fileName: null,
   },
 
-  setUploadedData: (data: UploadedData[]) => {
-    const dataWithIds = data.map((row) => ({
-      ...row,
+  setAllUploadedPokemons: (pokemons: UploadedData[]) => {
+    const pokemonsWithIds = pokemons.map(
+      (pokemon) =>
+        ({
+          ...pokemon,
+          id: pokemon.id,
+        } as UploadedData)
+    );
+    set({ uploadedData: pokemonsWithIds, isDataUploaded: true });
+  },
+
+  updateUploadedPokemon: async (id, updatedPokemon) => {
+    set((state) => ({
+      uploadedData: state.uploadedData.map((pokemon) =>
+        pokemon.id === id
+          ? ({ ...pokemon, ...updatedPokemon } as UploadedData)
+          : pokemon
+      ),
     }));
-    set({ uploadedData: dataWithIds, isDataUploaded: true });
+
+    try {
+      const { saveUploadedPokemon } = await import("@/Utils/indexedDb");
+      const updatedPokemonData = get().uploadedData.find(
+        (p: UploadedData) => p.id === id
+      );
+      if (updatedPokemonData) {
+        await saveUploadedPokemon(updatedPokemonData);
+      }
+    } catch (error) {
+      console.error("Error saving Uploaded Pokemon to IndexedDB:", error);
+    }
   },
 
   setColumnMappings: (mappings: ColumnMapping[]) => {
@@ -104,5 +145,82 @@ export const useUploadedStore = create<UploadedStore>((set, get) => ({
 
       return mappedRow;
     });
+  },
+
+  addCustomColumn: async (column) => {
+    set((state) => {
+      const newColumn = { ...column };
+      const updatedPokemons = state.uploadedData.map(
+        (pokemon) =>
+          ({
+            ...pokemon,
+            [column.id]: column.defaultValue,
+          } as UploadedData)
+      );
+
+      return {
+        ...state,
+        customColumns: [...state.customColumns, newColumn],
+        pokemons: updatedPokemons,
+      };
+    });
+
+    try {
+      const { saveCustomColumn, saveUploadedPokemons } = await import(
+        "@/Utils/indexedDb"
+      );
+      await saveCustomColumn(column);
+      const updatedPokemons = get().uploadedData;
+      await saveUploadedPokemons(updatedPokemons);
+    } catch (error) {
+      console.error("Error saving custom column to IndexedDB:", error);
+    }
+  },
+
+  removeCustomColumn: async (columnId) => {
+    set((state) => {
+      const updatedPokemons = state.uploadedData.map((pokemon) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { [columnId]: _removedColumn, ...rest } = pokemon;
+        return rest as UploadedData;
+      });
+
+      return {
+        ...state,
+        customColumns: state.customColumns.filter((col) => col.id !== columnId),
+        pokemons: updatedPokemons,
+      };
+    });
+    try {
+      const { removeCustomColumn, saveUploadedPokemons } = await import(
+        "@/Utils/indexedDb"
+      );
+      await removeCustomColumn(columnId);
+      const updatedPokemons = get().uploadedData;
+      await saveUploadedPokemons(updatedPokemons);
+    } catch (error) {
+      console.error("Error removing custom column from IndexedDB:", error);
+    }
+  },
+
+  updateCustomColumn: async (columnId, updates) => {
+    set((state) => ({
+      ...state,
+      customColumns: state.customColumns.map((col) =>
+        col.id === columnId ? { ...col, ...updates } : col
+      ),
+    }));
+
+    try {
+      const { saveCustomColumn } = await import("@/Utils/indexedDb");
+      const updatedColumn = get().customColumns.find(
+        (col: CustomColumn) => col.id === columnId
+      );
+      if (updatedColumn) {
+        await saveCustomColumn(updatedColumn);
+      }
+    } catch (error) {
+      console.error("Error updating custom column in IndexedDB:", error);
+    }
   },
 }));
